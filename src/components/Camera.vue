@@ -1,3 +1,7 @@
+<!-- Example usage:
+	<Camera @photo-taken="e => console.log(e)" />
+-->
+
 <script setup lang="ts">
 import { onMounted, ref } from "vue"
 
@@ -11,6 +15,8 @@ const videoWidth = ref(640)
 const videoHeight = ref(480)
 
 let stream: MediaStream
+
+const emit = defineEmits(["photo-taken"])
 
 // Camera options
 const facingMode = "environment"
@@ -71,7 +77,7 @@ function resumeCameraStream() {
 
 function submitPhoto() {
 	stream.getTracks()[0].stop() // End the camera stream
-	console.log(canvas.value?.toDataURL("image/png")) // Output the data
+	emit("photo-taken", canvas.value?.toDataURL("image/png")) // Send the photo data to the parent element
 }
 
 onMounted(async () => {
