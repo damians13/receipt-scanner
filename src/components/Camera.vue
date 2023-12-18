@@ -5,7 +5,7 @@ const video = ref<HTMLVideoElement>()
 const canvas = ref<HTMLCanvasElement>()
 const photo = ref<HTMLImageElement>()
 const deniedPermission = ref(false)
-const streaming = ref(true)
+const streaming = ref<Boolean>(true)
 
 const videoWidth = ref(640)
 const videoHeight = ref(480)
@@ -61,7 +61,17 @@ async function takePhoto() {
 		photo.value?.setAttribute("src", data)
 	}
 
-	stream.getTracks()[0].stop() // Stop the camera stream
+	stream.getTracks()[0].enabled = false // Pause the camera stream
+}
+
+function resumeCameraStream() {
+	stream.getTracks()[0].enabled = true // Unpause the camera stream
+	streaming.value = true
+}
+
+function submitPhoto() {
+	stream.getTracks()[0].stop() // End the camera stream
+	console.log(canvas.value?.toDataURL("image/png")) // Output the data
 }
 
 onMounted(async () => {
@@ -75,10 +85,14 @@ onMounted(async () => {
 	</div>
 	<div id="content" v-else>
 		<div id="display">
-			<video @change="getVideoFeed" ref="video" />
-			<img src="" ref="photo" />
+			<video :class="streaming ? 'content-shown' : 'content-hidden'" @change="getVideoFeed" ref="video" />
+			<img :class="streaming ? 'content-hidden' : 'content-shown'" src="" ref="photo" />
 		</div>
 		<button v-if="streaming" @click="takePhoto">Take photo</button>
+		<div id="photo-buttons" v-else>
+			<button @click="resumeCameraStream">Retry</button>
+			<button @click="submitPhoto">Done</button>
+		</div>
 		<canvas ref="canvas" />
 	</div>
 </template>
@@ -101,6 +115,11 @@ div#display {
 	min-height: v-bind(videoHeight + "px");
 }
 
+div#photo-buttons {
+	display: flex;
+	flex-direction: row;
+}
+
 video,
 img {
 	position: absolute;
@@ -108,6 +127,14 @@ img {
 	max-height: 80vh;
 	min-width: 40vw;
 	min-height: 40vh;
+}
+
+.content-shown {
+	z-index: 1;
+}
+
+.content-hidden {
+	z-index: 0;
 }
 
 canvas {
