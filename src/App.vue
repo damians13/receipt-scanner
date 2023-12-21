@@ -1,21 +1,10 @@
 <script setup lang="ts">
 import Camera from "@/components/Camera.vue"
+import Row from "@/components/Row.vue"
 import { ref } from "vue"
+import { DataRow, LineItem, Roommate } from "@/types"
 
 const PROXY_URL = "https://localhost/veryfi_api"
-
-interface LineItem {
-	description: string
-	text: string
-	total: number
-	type: string
-}
-
-interface DataRow {
-	description: string
-	total: number
-	active: boolean
-}
 
 const showCamera = ref(false)
 const photoTaken = ref(false)
@@ -30,7 +19,13 @@ function scan() {
 
 function processResult(veryfiApiJsonResult: any): DataRow[] {
 	const items: LineItem[] = veryfiApiJsonResult.line_items
-	const rows: DataRow[] = items.map(item => ({ description: item.description, total: item.total, active: true }))
+	const rows: DataRow[] = items.map(item => ({
+		description: item.description,
+		total: item.total,
+		active: true,
+		paidShares: { damian: 0, finn: 0, isaac: 0, will: 0, wyatt: 0 },
+		owedShares: { damian: 0, finn: 0, isaac: 0, will: 0, wyatt: 0 },
+	}))
 
 	if (treatNegativeAsDiscount.value) {
 		for (let i = 0; i < rows.length; i++) {
@@ -79,9 +74,46 @@ async function processPhoto(data: string) {
 
 	dataRows.value = processResult(result)
 }
+
+// Debug
+function test() {
+	// TODO: Host this / get a domain (pages?)
+	// TODO: Configure Google sheets oauth client with authorized URI
+}
+
+function handleDescriptionChange(e: any, index: number) {
+	console.log(`Renaming '${dataRows.value[index].description}' to '${e.target.value}'`) // Leave this here
+	dataRows.value[index].description = e.target.value
+}
+
+function handleTotalChange(e: any, index: number) {
+	console.log(`Changing $${dataRows.value[index].total} to $${e.target.value}`) // Leave this here
+	dataRows.value[index].total = e.target.value
+}
+
+function handlePaidSharesChange(e: any, who: Roommate, index: number) {
+	dataRows.value[index].paidShares[who] = e.target.value
+	console.log(dataRows.value)
+}
+
+function handleOwedSharesChange(e: any, who: Roommate, index: number) {
+	dataRows.value[index].owedShares[who] = e.target.value
+}
+
+function handleAddNewEntry() {
+	dataRows.value.push({
+		description: "New entry",
+		total: 0,
+		active: true,
+		paidShares: { damian: 0, finn: 0, isaac: 0, will: 0, wyatt: 0 },
+		owedShares: { damian: 0, finn: 0, isaac: 0, will: 0, wyatt: 0 },
+	})
+	console.log("Adding new entry")
+}
 </script>
 
 <template>
+	<button @click="test">Test</button>
 	<div id="container">
 		<template v-if="!photoTaken">
 			<div id="negative-discount">
@@ -92,12 +124,20 @@ async function processPhoto(data: string) {
 			<Camera v-else @photo-taken="processPhoto" />
 		</template>
 		<span v-if="isLoading">{{ loadingText }}</span>
-		<div v-for="(dataRow, index) in dataRows" class="data-row" :key="index">
-			<label :for="'is-active-' + index">Include</label>
-			<input type="checkbox" :checked="dataRow.active" :id="'is-active-' + index" />
-			<span>{{ dataRow.description }}</span>
-			<span>${{ dataRow.total }}</span>
-		</div>
+		<Row
+			v-for="(dataRow, index) in dataRows"
+			:dataRow="dataRow"
+			:index="index"
+			:key="index"
+			@description-change="handleDescriptionChange"
+			@total-change="handleTotalChange"
+			@paid-shares-change="handlePaidSharesChange"
+			@owed-shares-change="handleOwedSharesChange"
+		/>
+		<template v-if="photoTaken">
+			<button @click="handleAddNewEntry">Add new entry</button>
+			<button>Save to spreadsheet</button>
+		</template>
 	</div>
 </template>
 
@@ -124,28 +164,9 @@ async function processPhoto(data: string) {
 	}
 }
 
-.data-row {
-	display: flex;
-	flex-direction: row;
-	background-color: #484848;
-	border-radius: 8px;
-	margin: 4px;
-	width: 60%;
-	text-align: center;
-	align-items: center;
-
-	* {
-		padding: 4px 4px 4px 12px;
-	}
-}
-
 input[type="checkbox"] {
 	width: min(3vw, 3vh);
 	height: min(3vw, 3vh);
 	padding: 2px;
-}
-
-label {
-	user-select: none;
 }
 </style>
