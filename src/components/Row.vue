@@ -6,7 +6,11 @@ const props = defineProps<{
 	index: number
 }>()
 
-const emit = defineEmits(["descriptionChange", "totalChange", "paidSharesChange", "owedSharesChange"])
+const emit = defineEmits(["descriptionChange", "totalChange", "paidSharesChange", "owedSharesChange", "activeChange"])
+
+function handleActiveChange(event: Event) {
+	emit("activeChange", event, props.index)
+}
 
 function descriptionChange(event: Event) {
 	emit("descriptionChange", event, props.index)
@@ -29,7 +33,7 @@ function owedSharesChange(event: Event, who: Roommate) {
 	<div class="container">
 		<div class="data-row">
 			<label :for="'is-active-' + props.index">Include</label>
-			<input type="checkbox" :checked="props.dataRow.active" :id="'is-active-' + props.index" />
+			<input type="checkbox" :checked="props.dataRow.active" @change="handleActiveChange" :id="'is-active-' + props.index" />
 			<input type="text" :value="props.dataRow.description" @change="descriptionChange" />
 			<span
 				>$

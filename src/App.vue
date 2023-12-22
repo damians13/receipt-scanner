@@ -4,7 +4,7 @@ import Row from "@/components/Row.vue"
 import { ref } from "vue"
 import { DataRow, LineItem, Roommate } from "@/types"
 
-const PROXY_URL = "https://localhost/veryfi_api"
+const PROXY_URL = "https://localhost"
 
 const showCamera = ref(false)
 const photoTaken = ref(false)
@@ -60,7 +60,7 @@ async function processPhoto(data: string) {
 
 	// Make request and show loading text while the request is processing
 	isLoading.value = true
-	const response = await fetch(PROXY_URL, options)
+	const response = await fetch(PROXY_URL + "/veryfi_api", options)
 	const result = await response.json()
 
 	// If request failed, output the error message
@@ -75,10 +75,8 @@ async function processPhoto(data: string) {
 	dataRows.value = processResult(result)
 }
 
-// Debug
-function test() {
-	// TODO: Host this / get a domain (pages?)
-	// TODO: Configure Google sheets oauth client with authorized URI
+function handleActiveChange(e: any, index: number) {
+	dataRows.value[index].active = e.target.checked
 }
 
 function handleDescriptionChange(e: any, index: number) {
@@ -110,10 +108,44 @@ function handleAddNewEntry() {
 	})
 	console.log("Adding new entry")
 }
+
+async function handleSave() {
+	const activeRows = dataRows.value.filter(row => row.active)
+	const processedRows = activeRows.map(row => [
+		row.description,
+		row.total,
+		row.paidShares.damian,
+		row.paidShares.finn,
+		row.paidShares.isaac,
+		row.paidShares.will,
+		row.paidShares.wyatt,
+		"",
+		row.owedShares.damian,
+		row.owedShares.finn,
+		row.owedShares.isaac,
+		row.owedShares.will,
+		row.owedShares.wyatt,
+		"",
+	])
+
+	const options = {
+		method: "POST",
+		body: JSON.stringify(processedRows),
+		headers: {
+			"Content-Type": "application/json",
+			apikey: import.meta.env.VITE_MY_APIKEY,
+			Accept: "application/json",
+		},
+	}
+
+	const response = await fetch(PROXY_URL + "/upload_to_spreadsheet", options)
+	const result = await response.json()
+
+	console.log(result)
+}
 </script>
 
 <template>
-	<button @click="test">Test</button>
 	<div id="container">
 		<template v-if="!photoTaken">
 			<div id="negative-discount">
@@ -129,14 +161,15 @@ function handleAddNewEntry() {
 			:dataRow="dataRow"
 			:index="index"
 			:key="index"
+			@active-change="handleActiveChange"
 			@description-change="handleDescriptionChange"
 			@total-change="handleTotalChange"
 			@paid-shares-change="handlePaidSharesChange"
 			@owed-shares-change="handleOwedSharesChange"
 		/>
-		<template v-if="photoTaken">
+		<template v-if="photoTaken && !isLoading">
 			<button @click="handleAddNewEntry">Add new entry</button>
-			<button>Save to spreadsheet</button>
+			<button @click="handleSave">Save to spreadsheet</button>
 		</template>
 	</div>
 </template>
