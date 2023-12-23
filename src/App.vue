@@ -4,7 +4,7 @@ import Row from "@/components/Row.vue"
 import { ref } from "vue"
 import { DataRow, LineItem, Roommate } from "@/types"
 
-const PROXY_URL = "https://localhost"
+const PROXY_URL = "https://50.92.11.93"
 
 const showCamera = ref(false)
 const photoTaken = ref(false)
