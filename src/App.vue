@@ -180,6 +180,8 @@ async function handleSave() {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	max-width: 80vw;
+	overflow-x: hidden;
 
 	button {
 		max-width: 60vw;

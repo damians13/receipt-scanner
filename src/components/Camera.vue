@@ -109,6 +109,8 @@ div#content {
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
+	max-width: 90vw;
+	overflow-x: hidden;
 }
 
 div#display {
@@ -117,7 +119,7 @@ div#display {
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
-	min-width: v-bind(videoWidth + "px");
+	min-width: min(v-bind(videoWidth + "px"), 90vw);
 	min-height: v-bind(videoHeight + "px");
 }
 

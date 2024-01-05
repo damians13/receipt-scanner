@@ -84,6 +84,8 @@ function owedSharesChange(event: Event, who: Roommate) {
 	border-radius: 8px;
 	margin: 4px;
 	width: fit-content;
+	max-width: 90vw;
+	overflow-x: scroll;
 }
 
 .data-row {
@@ -100,6 +102,8 @@ function owedSharesChange(event: Event, who: Roommate) {
 .shares-data {
 	display: flex;
 	flex-direction: row;
+	max-width: 80vw;
+	overflow-x: scroll;
 
 	* {
 		margin: 0px 12px 12px 12px;
@@ -114,6 +118,10 @@ input[type="checkbox"] {
 
 input[type="number"] {
 	width: 48px;
+}
+
+input[type="text"] {
+	width: 25vw;
 }
 
 label {
